@@ -11,20 +11,20 @@
         android:layout_height="wrap_content" >
 
         <Button
-            android:id="@+id/btnBuyer"
+            android:id="@+id/button1"
             android:layout_width="161dp"
             android:layout_height="wrap_content"
             android:text="我是買家" />
 
         <Button
-            android:id="@+id/btnSeller"
+            android:id="@+id/button2"
             android:layout_width="161dp"
             android:layout_height="wrap_content"
             android:text="我是賣家" />
     </LinearLayout>
 
     <ListView
-        android:id="@+id/listChatroom"
+        android:id="@+id/listView1"
         android:layout_width="match_parent"
         android:layout_height="389dp"
         android:layout_weight="1.08" >

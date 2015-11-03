@@ -6,21 +6,20 @@ public class FileManager {
 
 	private FileReader reader;
 	private FileWriter writer;
-	private FileOutputStream fos;
 	private File f;
+	private FileOutputStream fos;
 	public String savePath;
 	private BufferedReader br;
 	FileManager(String filename)
-	{	try{
-		savePath = "C:\\DataBase\\"+filename;
+	{
+		try{
+		savePath = "C:/"+filename;
 		f = new File(savePath);
 		if(!f.exists())
 		{
+			//f.mkdir();
 			f.createNewFile();
 		}
-		
-		
-	
 		
 		}
 		catch(Exception e)

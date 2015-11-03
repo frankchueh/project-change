@@ -8,7 +8,7 @@ import java.sql.Statement;
 import java.util.*;
 
 
-public class productdb {
+public class productDB {
 	
 	// Database 物件
 	private Connection dbConnect = null;
@@ -23,15 +23,15 @@ public class productdb {
 	
 	
 	// Database 連線
-	public productdb() {
+	public productDB() {
 		
 		try {
 			// Driver 註冊
 			Class.forName("com.mysql.jdbc.Driver");
 			// 取得 Connection -> 給定主機名稱 ，Database 名稱  ，使用者登入資訊
-			dbConnect = DriverManager.getConnection("jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=Big5", 
-											  "user", 
-											  "12345678");
+			dbConnect = DriverManager.getConnection("jdbc:mysql://localhost:8038/schoolproject?useUnicode=true&characterEncoding=Big5", 
+											  "root", 
+											  "steveandfrank");
 			
 		}catch(ClassNotFoundException e) {
 			System.out.println("DriverClassNotFound :" + e.toString());
@@ -66,6 +66,8 @@ public class productdb {
 		return Qresult;
 	}
 	
+	// 根據 productID 取得其所有的相關資訊 ( 名稱 , 價格  , 照片路徑 , 資訊路徑 )
+	
 	public String getProductInfo(int productID) {
 		
 		Qresult = "";
@@ -76,7 +78,8 @@ public class productdb {
 			prepare_input_stat.setInt(1, productID);
 			result = prepare_input_stat.executeQuery();
 	    	
-	    	Qresult += result.getString("Pname") + "\n" +
+	    	Qresult += productID + "\n" +
+	    			   result.getString("Pname") + "\n" +
 	    			   result.getInt("Price") + "\n" +
 	    			   result.getString("Pphoto") + "\n" +
 	    			   result.getString("Pinfo");
@@ -90,6 +93,8 @@ public class productdb {
 		return Qresult;
 
 	}
+	
+	// 更新商品相關資訊 ( 名稱 , 價格 )
 	
 	public void updateProduct(int productID , String Pname , int price) {
 		
@@ -109,12 +114,14 @@ public class productdb {
 		}
 	}
 	
+	// 新增一筆新的商品資訊
+	
 	public int insertProduct(String Pname , int price , int userID) {
 		
 		String insertQuery = "INSERT INTO productdb(productID,Pname,price,userID,state)"
-				+ "SELECT IFNULL(max(productID),0)+1 , ? , ? , ? FROM productdb;";
+				+ "SELECT IFNULL(max(productID),0)+1 , ? , ? , ? , ? FROM productdb;";
 		
-		String selectQuery = "SELECT MAX(productID) FROM productdb where userID = ?;";
+		String selectQuery = "SELECT max(productID) FROM productdb WHERE userID = ?;";
 		String updateQuery = "UPDATE productdb SET Pphoto = ? , Pinfo = ? WHERE productID = ?;";
 		
 		int newProductID = -1;  // 初始值為 -1 
@@ -132,9 +139,11 @@ public class productdb {
 				prepare_input_stat.setInt(1,userID);
 				result = prepare_input_stat.executeQuery();
 				
-				newProductID = result.getInt("productID");
+				if(result.next()) {
+					newProductID = result.getInt("max(productID)");
+				}
 				
-				String path = "DataBase/product/" + newProductID + "/";
+				String path = "C:/DataBase/product/" + newProductID + "/";
 				
 				try{
 					prepare_input_stat = dbConnect.prepareStatement(updateQuery);
@@ -149,6 +158,7 @@ public class productdb {
 			}catch(SQLException e) {
 				System.out.println("SelectDB Exception :" + e.toString());
 			}
+			
 		}catch(SQLException e) {
 			System.out.println("InsertDB Exception :" + e.toString());
 		}finally {
@@ -159,6 +169,8 @@ public class productdb {
 		
 		return newProductID;
 	}
+	
+	// 根據 productID 去刪除商品
 	
 	public void deletProduct(int productID) {
 		
@@ -175,6 +187,29 @@ public class productdb {
 			close();
 		}
 	}
+	
+	// 新增商品圖片時，根據 userID 去取得其最新 (max)的 productID
+	
+	public int getNewProductIDbyUserID(int userID) {
+		
+		String selectQuery = "SELECT max(productID) FROM productdb WHERE userID = ?;";
+		int photoProductID = -1;
+		try {
+			prepare_input_stat = dbConnect.prepareStatement(selectQuery);
+			prepare_input_stat.setInt(1,userID);
+			result = prepare_input_stat.executeQuery();
+			
+			if(result.next()) {
+				photoProductID = result.getInt("max(productID)");
+			}
+			
+		}catch(SQLException e) {
+			System.out.println("SelectDB Exception :" + e.toString());
+		}
+		
+		return photoProductID;
+	}
+	
 	
 	// Close 方法
 	

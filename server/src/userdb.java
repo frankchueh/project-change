@@ -4,9 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class userdb {
 
@@ -17,20 +14,26 @@ public class userdb {
 	private ResultSet rs = null;
 	// 結果集
 	private PreparedStatement pst = null;
-
 	// 執行,傳入之sql為預儲之字申,需要傳入變數之位置
 	// 先利用?來做標示
+
+	private String dropdbSQL = "DROP TABLE userdb ";
+
+	private String createdbSQL = "CREATE TABLE User (" + "    id     INTEGER "
+			+ "  , name    VARCHAR(20) " + "  , passwd  VARCHAR(20))";
+
+	private String insertdbSQL = "insert into userdata(UserID,UserName,UserLatitude,UserLongitude) "
+			+ "select ifNULL(max(UserID),0)+1,?,?,? from userdata;";
+
+	private String selectSQL = "select * from userdb ";
 
 	public userdb() {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			System.out.println("註冊driver");
 			// 註冊driver
-			con = DriverManager
-					.getConnection(
-							"jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=Big5",
-							"user", "12345678");
-			System.out.println("取得connection");
+			con =  DriverManager.getConnection("jdbc:mysql://localhost:8038/schoolproject?useUnicode=true&characterEncoding=Big5", 
+					  "root", 
+					  "steveandfrank");
 			// 取得connection
 
 			// jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=Big5
@@ -46,226 +49,184 @@ public class userdb {
 
 	}
 
-	public boolean Login(String account, String password) {
-		String query = "select Password from userdb where binary Account=?"; // 使用binary辨別大小寫
+	// 建立table的方式
+	// 可以看看Statement的使用方式
+	public void createTable() {
+		try {
+			stat = con.createStatement();
+			stat.executeUpdate(createdbSQL);
+		} catch (SQLException e) {
+			System.out.println("CreateDB Exception :" + e.toString());
+		} finally {
+			Close();
+		}
+	}
+
+	// 新增資料
+	// 可以看看PrepareStatement的使用方式
+	public void insertTable(String userid, String username , double ulat , double ulong) {
+		try {
+			pst = con.prepareStatement(insertdbSQL);
+			pst.setString(1, username);
+			pst.setDouble(2, ulat);
+			pst.setDouble(3, ulong);
+			pst.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("InsertDB Exception :" + e.toString());
+		} finally {
+			Close();
+		}
+	}
+
+	// 刪除Table,
+	// 跟建立table很像
+	public void dropTable() {
+		try {
+			stat = con.createStatement();
+			stat.executeUpdate(dropdbSQL);
+		} catch (SQLException e) {
+			System.out.println("DropDB Exception :" + e.toString());
+		} finally {
+			Close();
+		}
+	}
+
+	// 查詢資料
+	// 可以看看回傳結果集及取得資料方式
+	public void SelectTable() {
+		try {
+			stat = con.createStatement();
+			rs = stat.executeQuery(selectSQL);
+			System.out.println("Usernumber\tUsername\tAccount\t\tPassword\tPhoto");
+			while (rs.next()) {
+				System.out.println(rs.getInt("Usernumber") + "\t\t"
+						+ rs.getString("Username") + "\t\t"
+						+ rs.getString("Account") + "\t\t" 
+						+ rs.getString("Password") + "\t\t"
+						+ rs.getString("Photo") + "\t\t"
+						);
+			}
+		} catch (SQLException e) {
+			System.out.println("DropDB Exception :" + e.toString());
+		} finally {
+			Close();
+		}
+	}
+	
+	public boolean Login(String account,String password)
+	{	
+		String query = "select Password from userdb where binary Account=?";	//使用binary辨別大小寫
 		try {
 			pst = con.prepareStatement(query);
 			pst.setString(1, account);
-			rs = pst.executeQuery();
-			if (rs.next()) { // 判斷是否有result
-				String tem = rs.getString("Password");
-				if (tem.equals(password)) {
+			rs=pst.executeQuery();
+			if(rs.next())
+			{
+				String tem=rs.getString("Password");
+				if(tem.equals(password))
+				{
 					System.out.println("Login Success");
 					return true;
-				} else {
+				}
+				else
+				{
 					System.out.println("Password Incorrect");
 					return false;
 				}
-			} else {
+			}
+			else
+			{
 				System.out.println("Account Not Exist");
 				return false;
 			}
-
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			Close();
 		}
 		return false;
 	}
-
-	public boolean isAvailable(String account) {
-		String query = "select Password from userdb where binary Account=?"; // 使用binary辨別大小寫
+	
+	public boolean isAvailable(String account)
+	{
+		String query = "select Password from userdb where binary Account=?";	//使用binary辨別大小寫
 		try {
 			pst = con.prepareStatement(query);
 			pst.setString(1, account);
-			rs = pst.executeQuery();
-			if (rs.next()) {
+			rs=pst.executeQuery();
+			if(rs.next())
+			{
 				System.out.println("Account is Exist");
 				return false;
-			} else {
+			}
+			else
+			{
 				System.out.println("Account Not Exist");
 				return true;
 			}
-		} catch (SQLException e) {
+			}
+		catch(SQLException e)
+		{
 			e.printStackTrace();
-		} finally {
+		}
+		finally
+		{
 			Close();
 		}
 		return false;
 	}
-
-	public void setPhoto(String account, String photoPath) {
-		String query = "update userdb set Profile=? where Account=?";
+	
+	public boolean SignUp(String account,String password,String username)
+	{	
+		String query = "insert into userdb(Usernumber,Username,Account,Password) " +
+					"select ifNULL(max(Usernumber),0)+1,?,?,? from userdb;";
 		try {
-			pst = con.prepareStatement(query);
-			pst.setString(1, photoPath);
-			pst.setString(2, account);
-			pst.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			Close();
-		}
-	}
-
-	public String getUserInfo(String Account) {
-		String info = "";
-		String query = "select * from userdb where Account=?;";
-
-		try {
-			pst = con.prepareStatement(query);
-			pst.setString(1, Account);
-			rs = pst.executeQuery();
-			if (rs.next())
-				info += rs.getString("Account") + "\n"
-						+ rs.getString("Username") + "\n"
-						+ rs.getString("Profile"); // 若後續有追加新資料,Profile要維持最後一個
-			return info;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		} finally {
-			Close();
-		}
-
-	}
-
-	public String getUserDetail(int userID) {
-		String info = "";
-		String query = "select * from userinfodb where userID=?";
-		try {
-			pst = con.prepareStatement(query);
-			pst.setInt(1, userID);
-			rs = pst.executeQuery();
-
-			if (rs.next()) {
-				info += rs.getInt("age") + "\n" + rs.getDate("Birthday") + "\n"
-						+ rs.getString("sex") + "\n"
-						+ rs.getString("cellphone") + "\n"
-						+ rs.getString("email");
-			}
-			return info;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			Close();
-		}
-	}
-
-	public boolean updateUserinfo(String username, String account) {
-		String query = "update userdb set username =? where account=?";
-
-		try {
-			pst = con.prepareStatement(query);
+			if(isAvailable(account))
+			{pst = con.prepareStatement(query);
 			pst.setString(1, username);
 			pst.setString(2, account);
-			pst.executeUpdate();
-			return true;
+			pst.setString(3, password);
+			pst.executeUpdate();}
+			
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return false;
-		} finally {
+		}
+		finally
+		{
 			Close();
 		}
+		return false;
+		
 	}
-
+	
 	public int getUserID(String account) {
-		String query = "select userID from userdb where account=?";
-
+		
+		String query = "select userID FROM userdb WHERE Account = ?";
+		int userID = -1;
 		try {
+			//System.out.println(account);
 			pst = con.prepareStatement(query);
 			pst.setString(1, account);
 			rs = pst.executeQuery();
-			if (rs.next())
-				return rs.getInt("userID");
-			else
-				return -1;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return -1;
-		} finally {
-			Close();
-		}
-	}
-
-	public boolean updateUserDetail(int userID, int Age, String Bdate,
-		String sex, String cellphone, String email) {
-		String query = "update userinfodb set "
-				+ "age=?,Birthday=?,sex=?,cellphone=?,email=? "
-				+ "where userID=?";
-
-		try {
-
-			// 轉換birthday的格式
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			Date parsed = sdf.parse(Bdate);
-			java.sql.Date date = new java.sql.Date(parsed.getTime());
-			pst = con.prepareStatement(query);
-			pst.setInt(1, Age);
-			pst.setDate(2, date);
-			pst.setString(3, sex);
-			if(cellphone.equals(""))
-				pst.setNull(4, java.sql.Types.VARCHAR);
-			else
-				pst.setString(4, cellphone);
 			
-			if(cellphone.equals(""))
-				pst.setNull(5, java.sql.Types.VARCHAR);
-			else
-				pst.setString(5, email);
 			
-			pst.setInt(6, userID);
-			pst.executeUpdate();
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		} finally {
-			Close();
-		}
-
-	}
-
-	public boolean SignUp(String account, String password, String username) {
-		String query = "insert into userdb(userID,Username,Account,Password) "
-				+ "select ifNULL(max(userID),0)+1,?,?,? from userdb;";
-		try {
-			if (isAvailable(account)) {
-				pst = con.prepareStatement(query); // 建立一筆帳戶資料
-				pst.setString(1, username);
-				pst.setString(2, account);
-				pst.setString(3, password);
-				pst.executeUpdate();
-
-				int id = getUserID(account);
-				if (id != -1) {
-//					System.out.print("id:" + id+"\n");
-					query = "insert into userinfodb(userID) value(?)"; // 建立帳戶詳細資料,目前只有userID
-					pst = con.prepareStatement(query);
-					pst.setInt(1, id);
-					pst.executeUpdate();
-				}
-				return true;
-			} else
-				return false;
+			if(rs.next()) {
+				userID = rs.getInt("userID");
+			}
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return false;
-		} finally {
+		}
+		finally
+		{
 			Close();
 		}
-
+		return userID;
+		
 	}
-
+	
 	// 完整使用完資料庫後,記得要關閉所有Object
 	// 否則在等待Timeout時,可能會有Connection poor的狀況
 	private void Close() {
@@ -287,16 +248,25 @@ public class userdb {
 		}
 	}
 
-//	public static void main(String[] args) {
-//		userdb userDB = new userdb();
-//		userDB.SignUp("test", "test", "frankchueh");
-//		userDB.Login("test", "test");
-//		userDB.updateUserDetail(userDB.getUserID("Frank1"), 21, "1994-07-31", "m", "0912345678",
-//				"frank@email");
-//		String r=userDB.getUserDetail(userDB.getUserID("test"));
-//		System.out.println(r);
-//		r=userDB.getUserInfo("test");
-//		System.out.println(r);
-//		
-//	}
+	/*public static void main(String[] args) {
+		// 測看看是否正常
+		userdb test = new userdb();
+		//test.SelectTable();
+		test.insertTable("Frank704", "Frank", 24.222, 45.9873);
+		test.insertTable("test1", "test1", 54.212, 43.699);
+		test.insertTable("test2", "test2", 54.212, 43.699);
+		test.insertTable("test3", "test3", 54.212, 43.699);
+		test.insertTable("test4", "test4", 54.212, 43.699);
+		測試登入
+		test.Login("frank", "frank");
+		test.Login("frank", "frak");
+		test.Login("fran", "frank");
+		test.Login("STEVE", "steve");
+		test.Login("Steve", "Steven");
+		test.Login("Steve", "Stev");
+		
+		
+		//test.SignUp("test1","test2" , "test3");
+		//test.SelectTable();
+	}*/
 }
