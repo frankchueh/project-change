@@ -41,7 +41,7 @@
                         android:src="@drawable/default_photo" />
 
                     <TextView
-                        android:id="@+id/textView1"
+                        android:id="@+id/txtChatList1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"

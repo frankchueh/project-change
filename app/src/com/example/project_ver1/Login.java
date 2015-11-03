@@ -19,8 +19,8 @@ public class Login extends Activity {
 	Button btnLogin, btnSignup;
 	EditText editAccount, editPassword;
 	public Handler MessageHandler;
-//	public static  String address = "192.168.0.102";
-	public static String address = "192.168.0.102";
+	public static  String address = "192.168.42.115";
+//	public static String address = "192.168.0.102";
 	public static int port1 = 3838;
 	String savePath = Environment.getExternalStorageDirectory().getPath()+"/PolarTrade";
 	
