@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+    	android:layout_height="?android:attr/listPreferredItemHeight"
+   	    android:padding="6dip" >
+
+        <ImageView
+            android:id="@+id/productPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="6dip"
+            android:contentDescription="TODO"
+            android:src="@drawable/ic_launcher" />
+        
+        <TextView
+            android:id="@+id/productPrice"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/productName"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:singleLine="true"
+            android:text="$ product price"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/productPrice"
+            android:layout_alignTop="@+id/productPhoto"
+            android:layout_toRightOf="@+id/productPhoto"
+            android:text="Product Name"
+            android:textSize="24sp" />
+
+        
+   	    
+    </RelativeLayout>
+    
+</LinearLayout> 
