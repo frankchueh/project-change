@@ -67,7 +67,10 @@ public class GetPosition extends Service implements ConnectionCallbacks,
 		
 		return null;
 	}
-	
+
+
+test git
+
 	@Override
 	public void onCreate() {
 		
@@ -139,7 +142,10 @@ public class GetPosition extends Service implements ConnectionCallbacks,
 		// 啟動位置更新服務
 		// 當位置座標更新時，App 會自動呼叫 LocationListner.onLocationChanged
 		LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, 
-																 locationRequest, 
+
+
+test git
+														 locationRequest, 
 																 this);
 	}
 		
@@ -162,3 +168,6 @@ public class GetPosition extends Service implements ConnectionCallbacks,
 		 }	
 	}
 }
+
+
+test git
