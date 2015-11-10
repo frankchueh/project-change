@@ -39,12 +39,12 @@ public class GetPosition extends Service implements ConnectionCallbacks,
 	// 連接 Port
 	public int port = 3838;
 	// 使用者 ID
-    String user_Account;
+    String user_Account = "";
 	// message handler
 	private Handler MessageHandler; 
 	
-	public static final String START_UPLOAD = "com.example.project_ver1.action.upload";
-	public static final String QUIT_UPLOAD = "com.example.project_ver1.action.action.quit";
+	//public static final String START_UPLOAD = "com.example.project_ver1.action.upload";
+	//public static final String QUIT_UPLOAD = "com.example.project_ver1.action.action.quit";
 	
 	// 建立 Google API 用戶端物件
 		private synchronized void configGoogleApiClient() {
@@ -102,14 +102,10 @@ public class GetPosition extends Service implements ConnectionCallbacks,
 	public int onStartCommand(Intent intent , int flags , int startId) {
 		
 		String action = intent.getAction();
-		if(action.equals(START_UPLOAD)) {
-			mGoogleApiClient.connect();
-			user_Account = intent.getExtras().getString("Account");
-		}
-		else if(action.equals(QUIT_UPLOAD)) {
-			mGoogleApiClient.disconnect();
-		}
-		return START_NOT_STICKY;
+		mGoogleApiClient.connect();
+		user_Account = intent.getExtras().getString("Account");
+
+		return super.onStartCommand(intent, flags, startId);
 	}
 	
 
@@ -125,7 +121,7 @@ public class GetPosition extends Service implements ConnectionCallbacks,
 			 		  user_Account + "\n" + 
 			 		  updateLocation.getLatitude() + "\n" + 
 			 		  updateLocation.getLongitude();
-			new SendToServer(address,port,uploadString,MessageHandler,1007).start();
+			new SendToServer(address,port,uploadString,MessageHandler,SendToServer.UPLOAD_LOCATE).start();
 		}
 		
 	}
